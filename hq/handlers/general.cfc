@@ -670,3 +670,98 @@
 	</cffunction>
 
 </cfcomponent>
+
+
+
+			if(structKeyExists(arguments,"rawEntryBean")) {
+				stEntry = arguments.rawEntryBean.getMemento();
+			}
+			 
+			if(arguments.recipient eq "") {writeToCFLog("Missing 'recipient' email address. Cannot send alert email!"); return;}
+		</cfscript>
+
+		<!--- build contents of email --->
+		<cfsavecontent variable="body">
+			<cfoutput>
+			<cfif arguments.comment neq "">
+				<div style="font-family:arial;font-size:12px;">
+				#arguments.comment#
+				</div>
+				<hr />
+			</cfif>
+
+			<cfif arguments.entryID gt 0>
+				<cfset bugReportURL = getBugEntryHREF(arguments.entryID)>
+				<b>Bug Report URL:</b> <a href="#bugReportURL#">#bugReportURL#</a><br />
+				<hr />
+			</cfif>
+
+			<cfif structKeyExists(arguments,"rawEntryBean")>
+				<table style="font-family:arial;font-size:12px;">
+					<tr>
+						<td><b>Message:</b></td>
+						<td><strong>#stEntry.message#</strong></td>
+					</tr>
+					<tr>
+						<td><b>Date/Time:</b></td>
+						<td>#showDateTime(stEntry.receivedOn)#</td>
+					</tr>
+					<tr>
+						<td><b>Application:</b></td>
+						<td>#stEntry.applicationCode#</td>
+					</tr>
+					<tr>
+						<td><b>Host:</b></td>
+						<td>#stEntry.hostName#</td>
+					</tr>
+					<tr>
+						<td><b>Severity:</b></td>
+						<td>#stEntry.severityCode#</td>
+					</tr>
+					<tr>
+						<td><b>Template Path:</b></td>
+						<td>#stEntry.templatePath#</td>
+					</tr>
+					<tr valign="top">
+						<td><b>Exception Message:</b></td>
+						<td>#stEntry.exceptionMessage#</td>
+					</tr>
+					<tr valign="top">
+						<td><b>Exception Detail:</b></td>
+						<td>#stEntry.exceptionDetails#</td>
+					</tr>
+				</table>			
+				
+				<cfif stEntry.HTMLReport neq "" and arguments.includeHTMLReport>
+					<hr />
+					<b>HTML Report:</b><br />
+					#stEntry.HTMLReport#
+				</cfif>
+				<hr />
+			</cfif>
+
+			<div style="font-family:arial;font-size:11px;margin-top:15px;">
+				** This email has been sent automatically from the BugLog server at 
+				<a href="#buglogHref#">#buglogHref#</a><br />
+				<em>To disable automatic notifications log into the bugLog server and disable the corresponding rule.</em>
+			</div>
+			</cfoutput>
+		</cfsavecontent>
+		
+		<cfset mailerService.send(
+				from = sender, 
+				to = arguments.recipient,
+				subject = arguments.subject,
+				body = body,
+				type = "html"
+			) />
+
+	</cffunction>
+
+	<cffunction name="writeToCFLog" access="private" returntype="void" hint="writes a message to the internal cf logs">
+		<cfargument name="message" type="string" required="true">
+		<cflog application="true" file="bugLog_ruleProcessor" text="#arguments.message#">
+		<cfif structKeyExists(variables,"listener")>
+			<cfset variables.listener.logMessage(arguments.message)>
+		</cfif>
+	</cffunction>

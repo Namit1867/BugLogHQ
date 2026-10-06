@@ -34,26 +34,3 @@
 		<cfargument name="projectKey" type="string" required="false" default="">
 		<cfreturn variables.instance.jira.getIssueTypes(arguments.projectKey)>
 	</cffunction>
-	
-	<cffunction name="createIssue" access="public" returntype="struct">
-		<cfargument name="project" type="string" required="true">
-		<cfargument name="issueType" type="string" required="true">
-		<cfargument name="summary" type="string" required="true">
-		<cfargument name="description" type="string" required="true">
-		<cfreturn variables.instance.jira.createIssue(argumentCollection = arguments)>
-	</cffunction>
-
-	<cffunction name="getSetting" returnType="string" access="public" hint="Returns the given config setting, if doesnt exist, returns empty or default value">
-		<cfargument name="settingName" type="string" required="true">
-		<cfargument name="defaultValue" type="string" required="false" default="">
-		<cfreturn variables.instance.app.getConfig().getSetting("jira." & arguments.settingName, arguments.defaultValue)>
-	</cffunction>
-	
-	<cffunction name="setSetting" returntype="jiraService" access="public">
-		<cfargument name="settingName" type="string" required="true">
-		<cfargument name="settingValue" type="string" required="true">
-		<cfset variables.instance.app.getConfig().setSetting("jira." & arguments.settingName, arguments.settingValue)>
-		<cfreturn this>
-	</cffunction>
-
-</cfcomponent>
